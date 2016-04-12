@@ -69,6 +69,12 @@ namespace UTJ
                 repaint = SelectPlugin();
             }
 
+            {
+                var filename = t.pluginPath.GetFileName();
+                if(filename == null || filename == "") { return; }
+                GUILayout.Label(filename);
+            }
+
             EditorGUILayout.Space();
 
             // params
@@ -198,12 +204,16 @@ namespace UTJ
                         if (EditorGUI.EndChangeCheck())
                         {
                             Undo.RecordObject(target, "Changed Param Value");
-                            vp.value.value.r = (byte)r;
-                            vp.value.value.g = (byte)g;
-                            vp.value.value.b = (byte)b;
-                            vp.value.value.a = (byte)a;
+                            vp.value.value.r = (byte)Mathf.Clamp(r, 0, 255);
+                            vp.value.value.g = (byte)Mathf.Clamp(g, 0, 255);
+                            vp.value.value.b = (byte)Mathf.Clamp(b, 0, 255);
+                            vp.value.value.a = (byte)Mathf.Clamp(a, 0, 255);
                             repaint = true;
                         }
+                    }
+                    else
+                    {
+                        EditorGUILayout.LabelField(p.name, options);
                     }
                 }
             }

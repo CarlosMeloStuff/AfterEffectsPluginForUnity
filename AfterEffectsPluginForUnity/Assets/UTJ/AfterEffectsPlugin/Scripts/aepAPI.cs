@@ -12,7 +12,7 @@ using UnityEditor;
 namespace UTJ
 {
     [Serializable]
-    public abstract class AEFxParam
+    public class AEFxParam
     {
         public string name;
         public aepAPI.aepParamType type;
@@ -227,14 +227,15 @@ namespace UTJ
         [DllImport("AfterEffectsPlugin")] public static extern void         aepGetParamInfo(aepParam param, ref aepParamInfo dst);
 
         [DllImport("AfterEffectsPlugin")] public static extern void         aepSetInput(aepInstance ins, aepLayer layer);
-        [DllImport("AfterEffectsPlugin")] public static extern aepLayer     aepGetResult(aepInstance ins);
-        [DllImport("AfterEffectsPlugin")] public static extern aepLayer     aepRender(aepInstance ins, double time, int width, int height);
+        [DllImport("AfterEffectsPlugin")] public static extern void         aepSetDstSize(aepInstance ins, int width, int height);
+        [DllImport("AfterEffectsPlugin")] public static extern aepLayer     aepGetDstImage(aepInstance ins);
+        [DllImport("AfterEffectsPlugin")] public static extern aepLayer     aepRender(aepInstance ins, double time);
 
         [DllImport("AfterEffectsPlugin")] public static extern IntPtr       GetRenderEventFunc();
         [DllImport("AfterEffectsPlugin")] public static extern void         aepGuardBegin();
         [DllImport("AfterEffectsPlugin")] public static extern void         aepGuardEnd();
         [DllImport("AfterEffectsPlugin")] public static extern void         aepEraseDeferredCall(int id);
-        [DllImport("AfterEffectsPlugin")] public static extern int          aepRenderDeferred(aepInstance inst, double time, int width, int height, int id);
+        [DllImport("AfterEffectsPlugin")] public static extern int          aepRenderDeferred(aepInstance inst, double time, int id);
 
 
         [DllImport("AfterEffectsPlugin")] public static extern void         aepGetParamValue(aepParam param, IntPtr value);
@@ -267,6 +268,7 @@ namespace UTJ
                 case aepParamType.Point2D: ret = new AEFxPoint2DParam(param); break;
                 case aepParamType.Point3D: ret = new AEFxPoint3DParam(param); break;
                 case aepParamType.Color: ret = new AEFxColorParam(param); break;
+                default: ret = new AEFxParam(param); break;
             }
             return ret;
         }

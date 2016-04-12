@@ -67,6 +67,8 @@ namespace UTJ
         aepAPI.aepInstance m_inst;
         aepAPI.aepLayer m_img_src;
         RenderTexture m_rt_tmp;
+        RenderTexture m_rt_dst;
+        int m_prev_width, m_prev_height;
 
         int m_tw_read;
         int m_tw_write;
@@ -225,7 +227,12 @@ namespace UTJ
 
         void OnDisable()
         {
-            if(m_rt_tmp != null)
+            if (m_rt_dst != null)
+            {
+                m_rt_dst.Release();
+                m_rt_dst = null;
+            }
+            if (m_rt_tmp != null)
             {
                 m_rt_tmp.Release();
                 m_rt_tmp = null;
@@ -249,13 +256,42 @@ namespace UTJ
                 return;
             }
 
+
+            bool needs_blit = rt_dst == null;
+            bool resolution_changed = false;
+            if (m_prev_width != rt_src.width || m_prev_height != rt_src.height)
+            {
+                m_prev_width = rt_src.width;
+                m_prev_height = rt_src.height;
+                resolution_changed = true;
+            }
+
+            // rt_dst is null if this OpenToonzFx is last post effect and camera's render target is null
+            // in this case, we must allocate temporary RenderTexture, write result to it, and Blit() to destination.
+            if (rt_dst == null)
+            {
+                if (m_rt_dst != null && resolution_changed)
+                {
+                    m_rt_dst.Release();
+                    m_rt_dst = null;
+                }
+                if (m_rt_dst == null)
+                {
+                    m_rt_dst = new RenderTexture(rt_src.width, rt_src.height, 0, rt_src.format);
+                    m_rt_dst.Create();
+                }
+                rt_dst = m_rt_dst;
+            }
+
             UpdateInputImages(rt_src);
             ApplyParams();
-            m_otp_render = aepAPI.aepRenderDeferred(m_inst, Time.time, rt_src.width, rt_src.height, m_otp_render);
+            aepAPI.aepSetInput(m_inst, m_img_src);
+            aepAPI.aepSetDstSize(m_inst, rt_src.width, rt_src.height);
+            m_otp_render = aepAPI.aepRenderDeferred(m_inst, Time.time, m_otp_render);
             GL.IssuePluginEvent(GetAEPEvent(), m_otp_render);
 
             var dst_data = default(aepAPI.aepLayerData);
-            aepAPI.aepGetLayerData(aepAPI.aepGetResult(m_inst), ref dst_data);
+            aepAPI.aepGetLayerData(aepAPI.aepGetDstImage(m_inst), ref dst_data);
 
             if (dst_data.width == rt_dst.width && dst_data.height == rt_dst.height)
             {
@@ -282,7 +318,11 @@ namespace UTJ
                 GL.IssuePluginEvent(GetTWEvent(), m_tw_write);
                 Graphics.Blit(m_rt_tmp, rt_dst);
             }
-        }
 
+            if (needs_blit)
+            {
+                Graphics.Blit(rt_dst, (RenderTexture)null);
+            }
+        }
     }
 }

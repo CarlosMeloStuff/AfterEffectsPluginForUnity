@@ -101,17 +101,21 @@ aepCLinkage aepExport void aepSetInput(aepInstance *ins, aepLayer *layer)
     if (!ins) { return; }
     ins->setInput(layer);
 }
-
-aepCLinkage aepExport aepLayer* aepGetResult(aepInstance *ins)
+aepCLinkage aepExport void aepSetDstSize(aepInstance *ins, int width, int height)
+{
+    if (!ins) { return; }
+    ins->setDstSize(width, height);
+}
+aepCLinkage aepExport aepLayer* aepGetDstImage(aepInstance *ins)
 {
     if (!ins) { return nullptr; }
-    return ins->getResult();
+    return ins->getDstImage();
 }
 
-aepCLinkage aepExport aepLayer* aepRender(aepInstance *ins, double time, int width, int height)
+aepCLinkage aepExport aepLayer* aepRender(aepInstance *ins, double time)
 {
     if (!ins) { return nullptr; }
-    return ins->render(time, width, height);
+    return ins->render(time);
 }
 
 
@@ -123,7 +127,7 @@ aepCLinkage aepExport aepLayer* aepRender(aepInstance *ins, double time, int wid
 aepCLinkage aepExport void  aepGuardBegin();
 aepCLinkage aepExport void  aepGuardEnd();
 aepCLinkage aepExport void  aepEraseDeferredCall(int id);
-aepCLinkage aepExport int   aepRenderDeferred(aepInstance *inst, double time, int width, int height, int id);
+aepCLinkage aepExport int   aepRenderDeferred(aepInstance *inst, double time, int id);
 aepCLinkage aepExport UnityRenderingEvent   GetRenderEventFunc();
 
 typedef std::function<void()> DeferredCall;
@@ -187,11 +191,11 @@ aepCLinkage aepExport void aepCallDeferredCall(int id)
     if (dc) { dc(); }
 }
 
-aepCLinkage aepExport int aepRenderDeferred(aepInstance *inst, double time, int width, int height, int id)
+aepCLinkage aepExport int aepRenderDeferred(aepInstance *inst, double time, int id)
 {
     if (!inst) { return 0; }
     return aepAddDeferredCall([=]() {
-        return inst->render(time, width, height);
+        return inst->render(time);
     }, id);
 }
 
