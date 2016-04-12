@@ -62,7 +62,7 @@ struct aepParamInfo
 
 struct aepBoolParamValue
 {
-    bool value, def;
+    int value, def;
 };
 struct aepIntParamValue
 {

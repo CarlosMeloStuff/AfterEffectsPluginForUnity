@@ -12,12 +12,6 @@
 *.user
 *.log
 *.tlog
-*.mp4
-*.h264
-*.aac
-*.exr
-*.gif
-*.png
 *.dll
 
 _out/
@@ -33,9 +27,8 @@ _Hidden.meta
 obj/
 libs/
 
-openh264-*
-OpenToonzPluginForUnity/*.csproj
-OpenToonzPluginForUnity/*.sln
+AfterEffectsPluginForUnity/*.csproj
+AfterEffectsPluginForUnity/*.sln
 
 .build/
 release/
