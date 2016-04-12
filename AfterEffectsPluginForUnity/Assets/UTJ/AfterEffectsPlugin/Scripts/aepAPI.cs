@@ -227,9 +227,10 @@ namespace UTJ
         [DllImport("AfterEffectsPlugin")] public static extern void         aepGetParamInfo(aepParam param, ref aepParamInfo dst);
 
         [DllImport("AfterEffectsPlugin")] public static extern void         aepSetInput(aepInstance ins, aepLayer layer);
-        [DllImport("AfterEffectsPlugin")] public static extern void         aepSetDstSize(aepInstance ins, int width, int height);
         [DllImport("AfterEffectsPlugin")] public static extern aepLayer     aepGetDstImage(aepInstance ins);
+        [DllImport("AfterEffectsPlugin")] public static extern void         aepBeginSequence(aepInstance ins, int width, int height);
         [DllImport("AfterEffectsPlugin")] public static extern aepLayer     aepRender(aepInstance ins, double time);
+        [DllImport("AfterEffectsPlugin")] public static extern void         aepEndSequence(aepInstance ins);
 
         [DllImport("AfterEffectsPlugin")] public static extern IntPtr       GetRenderEventFunc();
         [DllImport("AfterEffectsPlugin")] public static extern void         aepGuardBegin();

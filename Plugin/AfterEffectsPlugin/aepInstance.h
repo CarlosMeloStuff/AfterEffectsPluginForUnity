@@ -12,9 +12,11 @@ public:
     aepParam*   getParamByName(const char *name);
 
     void        setInput(aepLayer *inp);
-    void        setDstSize(int width, int height);
     aepLayer*   getDstImage();
+
+    void        beginSequence(int width, int height);
     aepLayer*   render(double time);
+    void        endSequence();
 
 public:
     // internal

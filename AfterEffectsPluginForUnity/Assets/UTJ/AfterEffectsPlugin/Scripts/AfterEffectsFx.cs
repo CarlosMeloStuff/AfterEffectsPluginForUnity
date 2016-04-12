@@ -69,6 +69,7 @@ namespace UTJ
         RenderTexture m_rt_tmp;
         RenderTexture m_rt_dst;
         int m_prev_width, m_prev_height;
+        bool m_began;
 
         int m_tw_read;
         int m_tw_write;
@@ -237,6 +238,12 @@ namespace UTJ
                 m_rt_tmp.Release();
                 m_rt_tmp = null;
             }
+
+            if (m_began)
+            {
+                aepAPI.aepEndSequence(m_inst);
+                m_began = false;
+            }
         }
 
         void OnDestroy()
@@ -283,10 +290,20 @@ namespace UTJ
                 rt_dst = m_rt_dst;
             }
 
+            if (m_began && resolution_changed)
+            {
+                aepAPI.aepEndSequence(m_inst);
+                m_began = false;
+            }
+            if (!m_began)
+            {
+                aepAPI.aepBeginSequence(m_inst, rt_src.width, rt_src.height);
+                m_began = true;
+            }
+
             UpdateInputImages(rt_src);
             ApplyParams();
             aepAPI.aepSetInput(m_inst, m_img_src);
-            aepAPI.aepSetDstSize(m_inst, rt_src.width, rt_src.height);
             m_otp_render = aepAPI.aepRenderDeferred(m_inst, Time.time, m_otp_render);
             GL.IssuePluginEvent(GetAEPEvent(), m_otp_render);
 

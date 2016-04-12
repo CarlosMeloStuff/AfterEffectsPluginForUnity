@@ -752,7 +752,7 @@ static PF_Err pf_premultiply_color(
 
 static SPErr SPAcquireSuite(const char *name, int version, const void **suite)
 {
-    aepTrace("name: %s", name);
+    aepTrace("name: \"%s\"", name);
 
     typedef std::map<int, std::vector<void*>> versions;
     typedef std::map<std::string, versions> suites;
@@ -792,7 +792,7 @@ static SPErr SPAcquireSuite(const char *name, int version, const void **suite)
 }
 static SPErr SPReleaseSuite(const char *name, int version)
 {
-    aepTrace("name: %s", name);
+    aepTrace("name: \"%s\"", name);
     return kSPNoError;
 }
 static SPBoolean SPIsEqual(const char *token1, const char *token2)

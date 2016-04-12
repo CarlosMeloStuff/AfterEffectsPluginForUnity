@@ -32,8 +32,9 @@ int main(int argc, char *argv[])
     aepResizeLayer(input, 1980, 1080);
 
     aepSetInput(inst, input);
-    aepSetDstSize(inst, 1980, 1080);
+    aepBeginSequence(inst, 1980, 1080);
     aepRender(inst, 0.0);
+    aepEndSequence(inst);
 
     aepDestroyLayer(input);
     aepDestroyInstance(inst);

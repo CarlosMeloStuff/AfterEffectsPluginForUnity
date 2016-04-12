@@ -57,14 +57,15 @@ void aepInstance::setInput(aepLayer *inp)
     getParam(0)->setValue(&inp);
 }
 
-void aepInstance::setDstSize(int width, int height)
-{
-    m_output.resize(width, height);
-}
-
 aepLayer* aepInstance::getDstImage()
 {
     return &m_output;
+}
+
+void aepInstance::beginSequence(int width, int height)
+{
+    m_output.resize(width, height);
+    callPF(PF_Cmd_SEQUENCE_SETUP);
 }
 
 aepLayer* aepInstance::render(double time)
@@ -73,6 +74,11 @@ aepLayer* aepInstance::render(double time)
     callPF(PF_Cmd_RENDER);
     callPF(PF_Cmd_FRAME_SETDOWN);
     return &m_output;
+}
+
+void aepInstance::endSequence()
+{
+    callPF(PF_Cmd_SEQUENCE_SETDOWN);
 }
 
 PF_Err aepInstance::callPF(int cmd)

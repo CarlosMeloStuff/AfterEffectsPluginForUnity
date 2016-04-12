@@ -101,21 +101,26 @@ aepCLinkage aepExport void aepSetInput(aepInstance *ins, aepLayer *layer)
     if (!ins) { return; }
     ins->setInput(layer);
 }
-aepCLinkage aepExport void aepSetDstSize(aepInstance *ins, int width, int height)
-{
-    if (!ins) { return; }
-    ins->setDstSize(width, height);
-}
 aepCLinkage aepExport aepLayer* aepGetDstImage(aepInstance *ins)
 {
     if (!ins) { return nullptr; }
     return ins->getDstImage();
 }
 
+aepCLinkage aepExport void aepBeginSequence(aepInstance *ins, int width, int height)
+{
+    if (!ins) { return; }
+    return ins->beginSequence(width, height);
+}
 aepCLinkage aepExport aepLayer* aepRender(aepInstance *ins, double time)
 {
     if (!ins) { return nullptr; }
     return ins->render(time);
+}
+aepCLinkage aepExport void aepEndSequence(aepInstance *ins)
+{
+    if (!ins) { return; }
+    return ins->endSequence();
 }
 
 
