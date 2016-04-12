@@ -132,7 +132,7 @@ void aepParam::setValue(const void *src)
     case aepParamType_Layer:
         m_data.vlayer.value = ((aepLayerParamValue*)src)->value;
         if (m_data.vlayer.value) {
-            u.ld = m_data.vlayer.value->getPF();
+            u.ld = m_data.vlayer.value->getPFData();
         }
         break;
     }

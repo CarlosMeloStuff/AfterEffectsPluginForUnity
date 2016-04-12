@@ -8,9 +8,10 @@ aepLayer::aepLayer()
     m_pf.pix_aspect_ratio.num = 1;
     m_pf.pix_aspect_ratio.den = 1;
     m_pf.dephault = PF_LayerDefault_NONE;
+    m_pf.reserved0 = this;
 }
 
-PF_LayerDef&    aepLayer::getPF() { return m_pf; }
+PF_LayerDef&    aepLayer::getPFData() { return m_pf; }
 aepImageRGBAu8& aepLayer::getImage() { return m_image; }
 int             aepLayer::getWidth() const { return m_image.getWidth(); }
 int             aepLayer::getHeight() const { return m_image.getHeight(); }

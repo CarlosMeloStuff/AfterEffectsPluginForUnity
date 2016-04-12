@@ -75,9 +75,9 @@ aepLayer* aepInstance::render(double time)
     return &m_output;
 }
 
-void aepInstance::callPF(int cmd)
+PF_Err aepInstance::callPF(int cmd)
 {
-    m_entrypoint(cmd, &m_pf_in, &m_pf_out, &m_pf_params[0], &m_output.m_pf, this);
+    return m_entrypoint(cmd, &m_pf_in, &m_pf_out, &m_pf_params[0], &m_output.m_pf, this);
 }
 
 aepParam* aepInstance::addParam(int pos, const PF_ParamDef& pf)
@@ -99,4 +99,20 @@ aepParam* aepInstance::addParam(int pos, const PF_ParamDef& pf)
     m_pf_params.resize(m_params.size());
     m_pf_params[pos] = &param->getPFParam();
     return param;
+}
+
+void aepInstance::addSupportedFormat(PF_PixelFormat fmt)
+{
+    m_pf_formats.push_back(fmt);
+}
+
+void aepInstance::clearSupportedFormat()
+{
+    m_pf_formats.clear();
+}
+
+bool aepInstance::isFormatSupported(PF_PixelFormat fmt)
+{
+    auto i = std::find(m_pf_formats.begin(), m_pf_formats.end(), fmt);
+    return i != m_pf_formats.end();
 }

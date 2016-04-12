@@ -420,6 +420,9 @@ static PF_Err pf_new_world(
     PF_EffectWorld		*world)		/* always 32 bit */
 {
     aepTrace2();
+    auto *ret = new aepLayer();
+    ret->resize(width, height);
+    *world = ret->getPFData();
     return PF_Err_NONE;
 }
 
@@ -428,6 +431,7 @@ static PF_Err pf_dispose_world(
     PF_EffectWorld		*world)
 {
     aepTrace2();
+    delete (aepLayer*)world->reserved0;
     return PF_Err_NONE;
 }
 
@@ -441,6 +445,9 @@ static PF_Err pf_NewWorld(
     PF_EffectWorld		*worldP)
 {
     aepTrace2();
+    auto *ret = new aepLayer();
+    ret->resize(widthL, heightL);
+    *worldP = ret->getPFData();
     return PF_Err_NONE;
 }
 
@@ -449,6 +456,7 @@ static PF_Err pf_DisposeWorld(
     PF_EffectWorld		*worldP)
 {
     aepTrace2();
+    delete (aepLayer*)worldP->reserved0;
     return PF_Err_NONE;
 }
 
@@ -458,6 +466,7 @@ static PF_Err pf_GetPixelFormat(
     PF_PixelFormat				*pixel_formatP)		/* << OUT. one of the above PF_PixelFormat types */
 {
     aepTrace2();
+    *pixel_formatP = PF_PixelFormat_ARGB32;
     return PF_Err_NONE;
 }
 
@@ -470,6 +479,8 @@ static PF_Err pf_AddSupportedPixelFormat(
     PF_PixelFormat		pixel_format)				/* add a supported pixel format */
 {
     aepTrace2();
+    auto inst = (aepInstance*)effect_ref;
+    inst->addSupportedFormat(pixel_format);
     return PF_Err_NONE;
 }
 
@@ -477,6 +488,8 @@ static PF_Err pf_ClearSupportedPixelFormats(
     PF_ProgPtr			effect_ref)				/* reference from in_data */
 {
     aepTrace2();
+    auto inst = (aepInstance*)effect_ref;
+    inst->clearSupportedFormat();
     return PF_Err_NONE;
 }
 
@@ -497,6 +510,33 @@ static PF_Err pf_iterate(
     PF_EffectWorld	*dst)
 {
     aepTrace2();
+
+    auto& simg = ((aepLayer*)src->reserved0)->getImage();
+    auto& dimg = ((aepLayer*)dst->reserved0)->getImage();
+
+    PF_Rect a = { 0, simg.getHeight(), simg.getWidth(), 0 };
+    if (area) {
+        a = *area;
+    }
+
+    char *sdata = (char*)simg.getData();
+    int spsize = simg.getPixelSize();
+    int spitch = simg.getPitch();
+    char *ddata = (char*)simg.getData();
+    int dpsize = dimg.getPixelSize();
+    int dpitch = dimg.getPitch();
+
+    for (int yi = a.bottom; yi < a.top; ++yi) {
+        for (int xi = a.left; xi < a.right; ++xi) {
+            pix_fn(refcon, xi, yi, (C*)&sdata[spitch*yi + spsize*xi], (C*)&ddata[dpitch*yi + dpsize*xi]);
+        }
+    }
+
+//typedef PF_Err (*PF_IteratePixel8Func)	(	void* refconP,					/* >> see comment above !! */
+//											A_long xL,						/* >> */
+//											A_long yL,						/* >> */
+//											PF_Pixel *inP,					/* <> */
+//											PF_Pixel *outP);				/* <> */
     return PF_Err_NONE;
 }
 

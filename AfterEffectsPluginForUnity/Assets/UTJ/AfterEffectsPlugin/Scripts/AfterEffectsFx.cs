@@ -266,7 +266,7 @@ namespace UTJ
                 resolution_changed = true;
             }
 
-            // rt_dst is null if this OpenToonzFx is last post effect and camera's render target is null
+            // rt_dst is null if this AfterEffectsFx is last post effect and camera's render target is null
             // in this case, we must allocate temporary RenderTexture, write result to it, and Blit() to destination.
             if (rt_dst == null)
             {

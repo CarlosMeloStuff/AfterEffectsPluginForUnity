@@ -6,7 +6,7 @@ class aepLayer
 public:
     aepLayer();
 
-    PF_LayerDef&    getPF();
+    PF_LayerDef&    getPFData();
     aepImageRGBAu8& getImage();
 
     int     getWidth() const;
