@@ -37,10 +37,8 @@ private:
     typedef std::vector<PF_PixelFormat> PF_PixelFormats;
 
     aepModule       *m_module;
-    aepEntryPoint   m_entrypoint;
     aepParams       m_params;
     aepLayer        m_output;
-    std::string     m_about;
 
     PF_InData       m_pf_in;
     PF_OutData      m_pf_out;

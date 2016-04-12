@@ -105,9 +105,10 @@ namespace UTJ
                 return;
             }
 
-            var inst = aepAPI.aepCreateInstance(mod);
-            aepAPI.aepGetPluginInfo(inst, ref m_plugin_info);
+            aepAPI.aepGetPluginInfo(mod, ref m_plugin_info);
             m_about = new Regex("\\r\\n?").Replace(m_plugin_info.about, "\n");
+
+            var inst = aepAPI.aepCreateInstance(mod);
 
             // update param list
             {
@@ -124,7 +125,7 @@ namespace UTJ
                     aepAPI.aepGetParamInfo(paramptr, ref pinfo);
                     if(m_params[i] == null || m_params[i].name != pinfo.name || m_params[i].type != pinfo.type)
                     {
-                        m_params[i] = aepAPI.CreateToonzParam(paramptr);
+                        m_params[i] = aepAPI.CreateAEFxParam(paramptr);
                     }
                 }
             }
@@ -189,6 +190,12 @@ namespace UTJ
 
             aepAPI.aepGuardEnd();
             TextureWriter.twGuardEnd();
+
+            if (m_began)
+            {
+                aepAPI.aepEndSequence(m_inst);
+                m_began = false;
+            }
         }
 
         aepAPI.aepLayer GetInputImage()
@@ -242,12 +249,6 @@ namespace UTJ
             {
                 m_rt_tmp.Release();
                 m_rt_tmp = null;
-            }
-
-            if (m_began)
-            {
-                aepAPI.aepEndSequence(m_inst);
-                m_began = false;
             }
         }
 

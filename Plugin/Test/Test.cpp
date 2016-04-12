@@ -15,6 +15,12 @@ int main(int argc, char *argv[])
     if (!mod) {
         printf("failed to load module: %s\n", argv[1]);
     }
+    {
+        aepPluginInfo info;
+        aepGetPluginInfo(mod, &info);
+        printf("%s\n", info.about);
+    }
+
     aepInstance *inst = aepCreateInstance(mod);
 
     {

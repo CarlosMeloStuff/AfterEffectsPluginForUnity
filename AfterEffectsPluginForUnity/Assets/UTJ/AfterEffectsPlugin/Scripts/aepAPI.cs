@@ -226,9 +226,10 @@ namespace UTJ
 
         [DllImport("AfterEffectsPlugin")] public static extern aepModule    aepLoadModule(string path);
         [DllImport("AfterEffectsPlugin")] public static extern void         aepUnloadModule(aepModule mod);
+        [DllImport("AfterEffectsPlugin")] public static extern void         aepGetPluginInfo(aepModule mod, ref aepPluginInfo dst);
+
         [DllImport("AfterEffectsPlugin")] public static extern aepInstance  aepCreateInstance(aepModule mod);
         [DllImport("AfterEffectsPlugin")] public static extern void         aepDestroyInstance(aepInstance ins);
-        [DllImport("AfterEffectsPlugin")] public static extern void         aepGetPluginInfo(aepInstance ins, ref aepPluginInfo dst);
 
         [DllImport("AfterEffectsPlugin")] public static extern int          aepGetNumParams(aepInstance ins);
         [DllImport("AfterEffectsPlugin")] public static extern aepParam     aepGetParam(aepInstance ins, int i);
@@ -264,7 +265,7 @@ namespace UTJ
         [DllImport("AfterEffectsPlugin")] public static extern void         aepSetParamValue(aepParam param, ref aepPoint3DParamValue value);
         [DllImport("AfterEffectsPlugin")] public static extern void         aepSetParamValue(aepParam param, ref aepColorParamValue value);
 
-        public static AEFxParam CreateToonzParam(aepParam param)
+        public static AEFxParam CreateAEFxParam(aepParam param)
         {
             var info = default(aepParamInfo);
             aepGetParamInfo(param, ref info);

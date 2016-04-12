@@ -103,9 +103,10 @@ aepCLinkage aepExport void          aepGetLayerData(aepLayer *layer, aepLayerDat
 
 aepCLinkage aepExport aepModule*    aepLoadModule(const char *path);
 aepCLinkage aepExport void          aepUnloadModule(aepModule *mod);
+aepCLinkage aepExport void          aepGetPluginInfo(aepModule *ins, aepPluginInfo *dst);
+
 aepCLinkage aepExport aepInstance*  aepCreateInstance(aepModule *mod);
 aepCLinkage aepExport void          aepDestroyInstance(aepInstance *ins);
-aepCLinkage aepExport void          aepGetPluginInfo(aepInstance *ins, aepPluginInfo *dst);
 
 aepCLinkage aepExport int           aepGetNumParams(aepInstance *ins);
 aepCLinkage aepExport aepParam*     aepGetParam(aepInstance *ins, int i);

@@ -24,9 +24,22 @@ public:
     aepInstance* createInstance();
     aepEntryPoint getEntryPoint();
 
+public:
+    PF_Err      callPF(int cmd);
+    PF_InData&  getPFInData();
+    PF_OutData& getPFOutData();
+
+    const std::string& getAbout() const;
+    bool        hasDialog() const;
+    bool        isInplace() const;
+
 private:
-    utj::module_t m_module;
-    aepEntryPoint m_entrypoint;
+    utj::module_t   m_module;
+    aepEntryPoint   m_entrypoint;
+    std::string     m_about;
+
+    PF_InData       m_pf_in;
+    PF_OutData      m_pf_out;
 };
 
 #endif // aepModule_h
