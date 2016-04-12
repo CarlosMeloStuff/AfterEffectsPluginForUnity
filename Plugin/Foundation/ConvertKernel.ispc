@@ -345,3 +345,30 @@ export void Rf32ToRf16(uniform f16 dst[], uniform float src[], uniform size_t si
 export void Rf32ToRGBAf32(uniform float dst[], uniform float src[], uniform size_t size) { Convert14(to_f32) }
 export void Rf32ToRGBf32(uniform float dst[], uniform float src[], uniform size_t size) { Convert13(to_f32) }
 export void Rf32ToRGf32(uniform float dst[], uniform float src[], uniform size_t size) { Convert12(to_f32) }
+
+
+#define RGBA2ARGB(T)\
+    for(uniform int i=0; i<size; ++i) {\
+        uniform T r = dst[i*4 + 0], g = dst[i*4 + 1], b = dst[i*4 + 2], a = dst[i*4 + 3];\
+        dst[i*4 + 0] = a;\
+        dst[i*4 + 1] = r;\
+        dst[i*4 + 2] = g;\
+        dst[i*4 + 3] = b;\
+    }
+    
+#define ARGB2RGBA(T)\
+    for(uniform int i=0; i<size; ++i) {\
+        uniform T a = dst[i*4 + 0], r = dst[i*4 + 1], g = dst[i*4 + 2], b = dst[i*4 + 3];\
+        dst[i*4 + 0] = r;\
+        dst[i*4 + 1] = g;\
+        dst[i*4 + 2] = b;\
+        dst[i*4 + 3] = a;\
+    }
+
+export void RGBA2ARGBu8(uniform u8 dst[], uniform size_t size)   { RGBA2ARGB(u8) }
+export void RGBA2ARGBf16(uniform f16 dst[], uniform size_t size) { RGBA2ARGB(f16) }
+export void RGBA2ARGBf32(uniform f32 dst[], uniform size_t size) { RGBA2ARGB(f32) }
+
+export void ARGB2RGBAu8(uniform u8 dst[], uniform size_t size)   { ARGB2RGBA(u8) }
+export void ARGB2RGBAf16(uniform f16 dst[], uniform size_t size) { ARGB2RGBA(f16) }
+export void ARGB2RGBAf32(uniform f32 dst[], uniform size_t size) { ARGB2RGBA(f32) }

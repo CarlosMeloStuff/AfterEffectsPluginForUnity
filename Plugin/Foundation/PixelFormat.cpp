@@ -299,6 +299,27 @@ const void* ConvertPixelFormat(void *dst, PixelFormat dstfmt, const void *src, P
 {
     return ConvertPixelFormat_ISPC(dst, dstfmt, src, srcfmt, size);
 }
+
+void RGBA2ARBB(void *data, PixelFormat fmt, size_t num_)
+{
+    uint32_t num = (uint32_t)num_;
+    switch (fmt) {
+    case PixelFormat_RGBAu8: ispc::RGBA2ARGBu8((uint8_t*)data, num); break;
+    case PixelFormat_RGBAf16: ispc::RGBA2ARGBf16((int16_t*)data, num); break;
+    case PixelFormat_RGBAf32: ispc::RGBA2ARGBf32((float*)data, num); break;
+    }
+}
+
+void ARGB2RBBA(void *data, PixelFormat fmt, size_t num_)
+{
+    uint32_t num = (uint32_t)num_;
+    switch (fmt) {
+    case PixelFormat_RGBAu8: ispc::ARGB2RGBAu8((uint8_t*)data, num); break;
+    case PixelFormat_RGBAf16: ispc::ARGB2RGBAf16((int16_t*)data, num); break;
+    case PixelFormat_RGBAf32: ispc::ARGB2RGBAf32((float*)data, num); break;
+    }
+}
+
 #endif // utjEnableISPCKernel
 
 } // namespace utj

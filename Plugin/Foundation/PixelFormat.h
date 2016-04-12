@@ -47,7 +47,12 @@ void ScaleArray(uint16_t *data, size_t size, float scale);
 void ScaleArray(int32_t *data, size_t size, float scale);
 void ScaleArray(half *data, size_t size, float scale);
 void ScaleArray(float *data, size_t size, float scale);
-const void* ConvertPixelFormat(void *dst, PixelFormat dstfmt, const void *src, PixelFormat srcfmt, size_t size);
+
+// if dstfmt == num_pixels, return src without conversion
+const void* ConvertPixelFormat(void *dst, PixelFormat dstfmt, const void *src, PixelFormat srcfmt, size_t num_pixels);
+
+void RGBA2ARBB(void *data, PixelFormat fmt, size_t num_pixels);
+void ARGB2RBBA(void *data, PixelFormat fmt, size_t num_pixels);
 
 } // namespace utj
 #endif // utj_PixelFormat_h
