@@ -12,6 +12,7 @@ public:
     aepParam*   getParamByName(const char *name);
 
     void        setInput(aepLayer *inp);
+    aepLayer*   getResult();
     aepLayer*   render(double time, int width, int height);
 
 public:

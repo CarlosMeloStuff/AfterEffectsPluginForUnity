@@ -57,6 +57,11 @@ void aepInstance::setInput(aepLayer *inp)
     getParam(0)->setValue(&inp);
 }
 
+aepLayer* aepInstance::getResult()
+{
+    return &m_output;
+}
+
 aepLayer* aepInstance::render(double time, int width, int height)
 {
     m_output.resize(width, height);

@@ -102,9 +102,105 @@ aepCLinkage aepExport void aepSetInput(aepInstance *ins, aepLayer *layer)
     ins->setInput(layer);
 }
 
+aepCLinkage aepExport aepLayer* aepGetResult(aepInstance *ins)
+{
+    if (!ins) { return nullptr; }
+    return ins->getResult();
+}
+
 aepCLinkage aepExport aepLayer* aepRender(aepInstance *ins, double time, int width, int height)
 {
     if (!ins) { return nullptr; }
     return ins->render(time, width, height);
 }
 
+
+#ifndef aepStaticLink
+// deferred call APIs
+
+#include "PluginAPI/IUnityGraphics.h"
+
+aepCLinkage aepExport void  aepGuardBegin();
+aepCLinkage aepExport void  aepGuardEnd();
+aepCLinkage aepExport void  aepEraseDeferredCall(int id);
+aepCLinkage aepExport int   aepRenderDeferred(aepInstance *inst, double time, int width, int height, int id);
+aepCLinkage aepExport UnityRenderingEvent   GetRenderEventFunc();
+
+typedef std::function<void()> DeferredCall;
+namespace {
+    std::mutex g_deferred_calls_mutex;
+    std::vector<DeferredCall> g_deferred_calls;
+}
+
+aepCLinkage aepExport void aepGuardBegin()
+{
+    g_deferred_calls_mutex.lock();
+}
+
+aepCLinkage aepExport void aepGuardEnd()
+{
+    g_deferred_calls_mutex.unlock();
+}
+
+aepCLinkage aepExport int aepAddDeferredCall(const DeferredCall& dc, int id)
+{
+    if (id <= 0) {
+        // search empty object and return its position if found
+        for (int i = 1; i < (int)g_deferred_calls.size(); ++i) {
+            if (!g_deferred_calls[i]) {
+                g_deferred_calls[i] = dc;
+                return i;
+            }
+        }
+
+        // 0th is "null" object
+        if (g_deferred_calls.empty()) { g_deferred_calls.emplace_back(DeferredCall()); }
+
+        // allocate new one
+        g_deferred_calls.emplace_back(dc);
+        return (int)g_deferred_calls.size() - 1;
+    }
+    else if (id < (int)g_deferred_calls.size()) {
+        g_deferred_calls[id] = dc;
+        return id;
+    }
+    else {
+        utjDebugLog("should not be here");
+        return 0;
+    }
+}
+
+aepCLinkage aepExport void aepEraseDeferredCall(int id)
+{
+    if (id <= 0 || id >= (int)g_deferred_calls.size()) { return; }
+
+    g_deferred_calls[id] = DeferredCall();
+}
+
+// **called from rendering thread**
+aepCLinkage aepExport void aepCallDeferredCall(int id)
+{
+    std::unique_lock<std::mutex> l(g_deferred_calls_mutex);
+    if (id <= 0 || id >= (int)g_deferred_calls.size()) { return; }
+
+    auto& dc = g_deferred_calls[id];
+    if (dc) { dc(); }
+}
+
+aepCLinkage aepExport int aepRenderDeferred(aepInstance *inst, double time, int width, int height, int id)
+{
+    if (!inst) { return 0; }
+    return aepAddDeferredCall([=]() {
+        return inst->render(time, width, height);
+    }, id);
+}
+
+static void UNITY_INTERFACE_API UnityRenderEvent(int eventID)
+{
+    aepCallDeferredCall(eventID);
+}
+aepCLinkage aepExport UnityRenderingEvent GetRenderEventFunc()
+{
+    return UnityRenderEvent;
+}
+#endif // aepStaticLink

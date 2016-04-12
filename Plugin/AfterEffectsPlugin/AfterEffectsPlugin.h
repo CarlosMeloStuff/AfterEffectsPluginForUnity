@@ -107,6 +107,7 @@ aepCLinkage aepExport void          aepGetParamValue(aepParam *param, void *valu
 aepCLinkage aepExport void          aepSetParamValue(aepParam *param, const void *value);
 
 aepCLinkage aepExport void          aepSetInput(aepInstance *ins, aepLayer *layer);
+aepCLinkage aepExport aepLayer*     aepGetResult(aepInstance *ins);
 aepCLinkage aepExport aepLayer*     aepRender(aepInstance *ins, double time, int width, int height);
 
 #endif // AfterEffectsPlugin_h
