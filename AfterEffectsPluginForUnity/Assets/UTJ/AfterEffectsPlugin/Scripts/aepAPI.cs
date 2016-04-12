@@ -134,6 +134,14 @@ namespace UTJ
             public static implicit operator bool(aepParam v) { return v.ptr != IntPtr.Zero; }
         }
 
+        public struct aepPluginInfo
+        {
+            public IntPtr about_;
+            public Bool has_dialog;
+            public Bool is_inplace;
+            public string about { get { return ToS(about_); } }
+        }
+
         public enum aepParamType
         {
             Unknown,
@@ -220,6 +228,7 @@ namespace UTJ
         [DllImport("AfterEffectsPlugin")] public static extern void         aepUnloadModule(aepModule mod);
         [DllImport("AfterEffectsPlugin")] public static extern aepInstance  aepCreateInstance(aepModule mod);
         [DllImport("AfterEffectsPlugin")] public static extern void         aepDestroyInstance(aepInstance ins);
+        [DllImport("AfterEffectsPlugin")] public static extern void         aepGetPluginInfo(aepInstance ins, ref aepPluginInfo dst);
 
         [DllImport("AfterEffectsPlugin")] public static extern int          aepGetNumParams(aepInstance ins);
         [DllImport("AfterEffectsPlugin")] public static extern aepParam     aepGetParam(aepInstance ins, int i);

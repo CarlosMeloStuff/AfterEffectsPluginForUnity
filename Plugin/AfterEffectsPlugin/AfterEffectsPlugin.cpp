@@ -63,6 +63,14 @@ aepCLinkage aepExport void aepDestroyInstance(aepInstance *ins)
     delete ins;
 }
 
+aepCLinkage aepExport void aepGetPluginInfo(aepInstance *ins, aepPluginInfo *dst)
+{
+    if (!ins || !dst) { return; }
+    dst->about = ins->getAbout().c_str();
+    dst->has_dialog = ins->hasDialog();
+    dst->is_inplace = ins->isInplace();
+}
+
 aepCLinkage aepExport int aepGetNumParams(aepInstance *ins)
 {
     if (!ins) { return 0; }

@@ -72,8 +72,11 @@ namespace UTJ
             {
                 var filename = t.pluginPath.GetFileName();
                 if(filename == null || filename == "") { return; }
-                GUILayout.Label(filename);
             }
+
+            EditorGUILayout.Space();
+
+            GUILayout.Label(t.pluginAbout);
 
             EditorGUILayout.Space();
 

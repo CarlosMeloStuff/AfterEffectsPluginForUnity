@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 #if UNITY_EDITOR
@@ -65,9 +66,11 @@ namespace UTJ
         [SerializeField] byte[] m_serialized;
 
         aepAPI.aepInstance m_inst;
+        aepAPI.aepPluginInfo m_plugin_info;
         aepAPI.aepLayer m_img_src;
         RenderTexture m_rt_tmp;
         RenderTexture m_rt_dst;
+        string m_about;
         int m_prev_width, m_prev_height;
         bool m_began;
 
@@ -86,7 +89,7 @@ namespace UTJ
             }
         }
         public AEFxParam[] pluginParams { get { return m_params; } }
-
+        public string pluginAbout { get { return m_about; } }
 
 
         IntPtr GetTWEvent() { return TextureWriter.GetRenderEventFunc(); }
@@ -103,6 +106,8 @@ namespace UTJ
             }
 
             var inst = aepAPI.aepCreateInstance(mod);
+            aepAPI.aepGetPluginInfo(inst, ref m_plugin_info);
+            m_about = new Regex("\\r\\n?").Replace(m_plugin_info.about, "\n");
 
             // update param list
             {

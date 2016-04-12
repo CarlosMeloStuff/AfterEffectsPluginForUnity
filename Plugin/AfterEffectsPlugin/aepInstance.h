@@ -26,6 +26,10 @@ public:
     bool        isFormatSupported(PF_PixelFormat fmt);
     PF_Err      callPF(int cmd);
 
+    const std::string& getAbout() const;
+    bool        hasDialog() const;
+    bool        isInplace() const;
+
 private:
     typedef std::unique_ptr<aepParam>   aepParamPtr;
     typedef std::vector<aepParamPtr>    aepParams;
@@ -36,6 +40,7 @@ private:
     aepEntryPoint   m_entrypoint;
     aepParams       m_params;
     aepLayer        m_output;
+    std::string     m_about;
 
     PF_InData       m_pf_in;
     PF_OutData      m_pf_out;
