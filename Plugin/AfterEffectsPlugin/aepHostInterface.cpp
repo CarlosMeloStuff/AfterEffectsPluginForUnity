@@ -531,12 +531,6 @@ static PF_Err pf_iterate(
             pix_fn(refcon, xi, yi, (C*)&sdata[spitch*yi + spsize*xi], (C*)&ddata[dpitch*yi + dpsize*xi]);
         }
     }
-
-//typedef PF_Err (*PF_IteratePixel8Func)	(	void* refconP,					/* >> see comment above !! */
-//											A_long xL,						/* >> */
-//											A_long yL,						/* >> */
-//											PF_Pixel *inP,					/* <> */
-//											PF_Pixel *outP);				/* <> */
     return PF_Err_NONE;
 }
 
@@ -553,6 +547,28 @@ static PF_Err pf_iterate_origin(
     PF_EffectWorld	*dst)
 {
     aepTrace2();
+
+    auto& simg = ((aepLayer*)src->reserved0)->getImage();
+    auto& dimg = ((aepLayer*)dst->reserved0)->getImage();
+
+    PF_Rect a = { 0, simg.getHeight(), simg.getWidth(), 0 };
+    if (area) {
+        a = *area;
+    }
+
+    char *sdata = (char*)simg.getData();
+    int spsize = simg.getPixelSize();
+    int spitch = simg.getPitch();
+    char *ddata = (char*)simg.getData();
+    int dpsize = dimg.getPixelSize();
+    int dpitch = dimg.getPitch();
+
+    // todo: this is not correct
+    for (int yi = a.bottom; yi < a.top; ++yi) {
+        for (int xi = a.left; xi < a.right; ++xi) {
+            pix_fn(refcon, xi, yi, (C*)&sdata[spitch*yi + spsize*xi], (C*)&ddata[dpitch*yi + dpsize*xi]);
+        }
+    }
     return PF_Err_NONE;
 }
 
@@ -586,6 +602,28 @@ static PF_Err pf_iterate_origin_non_clip_src(
     PF_EffectWorld	*dst)
 {
     aepTrace2();
+
+    auto& simg = ((aepLayer*)src->reserved0)->getImage();
+    auto& dimg = ((aepLayer*)dst->reserved0)->getImage();
+
+    PF_Rect a = { 0, simg.getHeight(), simg.getWidth(), 0 };
+    if (area) {
+        a = *area;
+    }
+
+    char *sdata = (char*)simg.getData();
+    int spsize = simg.getPixelSize();
+    int spitch = simg.getPitch();
+    char *ddata = (char*)simg.getData();
+    int dpsize = dimg.getPixelSize();
+    int dpitch = dimg.getPitch();
+
+    // todo: this is not correct
+    for (int yi = a.bottom; yi < a.top; ++yi) {
+        for (int xi = a.left; xi < a.right; ++xi) {
+            pix_fn(refcon, xi, yi, (C*)&sdata[spitch*yi + spsize*xi], (C*)&ddata[dpitch*yi + dpsize*xi]);
+        }
+    }
     return PF_Err_NONE;
 }
 
@@ -598,6 +636,17 @@ static PF_Err pf_iterate_generic(
         A_long iterationsL))
 {
     aepTrace2();
+    if (iterationsL == PF_Iterations_ONCE_PER_PROCESSOR) {
+        int hc = (int)std::thread::hardware_concurrency();
+        for (int i = 0; i < hc; ++i) {
+            fn_func(refconPV, i, i, iterationsL);
+        }
+    }
+    else {
+        for (int i = 0; i < iterationsL; ++i) {
+            fn_func(refconPV, 0, i, iterationsL);
+        }
+    }
     return PF_Err_NONE;
 }
 
@@ -629,6 +678,29 @@ static PF_Err pf_blend(
     PF_EffectWorld	*dst)
 {
     aepTrace2();
+
+    int width = src1->width;
+    int height = src1->height;
+    auto *sp1 = (utj::RGBAu8*)src1->data;
+    auto *sp2 = (utj::RGBAu8*)src2->data;
+    auto *dp = (utj::RGBAu8*)dst->data;
+
+    float w = (float)ratio / (float)0x00010000;
+    float iw = 1.0f - w;
+    for (int yi = 0; yi < height; ++yi) {
+        for (int xi = 0; xi < width; ++xi) {
+            int i = width * yi + xi;
+            utj::RGBAu8 s1 = sp1[i];
+            utj::RGBAu8 s2 = sp2[i];
+            dp[i] = {
+                uint8_t(float(s1.r) * iw + float(s2.r) * w),
+                uint8_t(float(s1.g) * iw + float(s2.g) * w),
+                uint8_t(float(s1.b) * iw + float(s2.b) * w),
+                uint8_t(float(s1.a) * iw + float(s2.a) * w)
+            };
+        }
+    }
+
     return PF_Err_NONE;
 }
 
@@ -656,6 +728,7 @@ static PF_Err pf_copy(
     PF_Rect			*dst_r)		/* pass NULL for whole world */
 {
     aepTrace2();
+    memcpy(dst->data, src->data, src->rowbytes * src->height);
     return PF_Err_NONE;
 }
 
@@ -667,6 +740,7 @@ static PF_Err pf_copy_hq(
     PF_Rect			*dst_r)		/* pass NULL for whole world */
 {
     aepTrace2();
+    memcpy(dst->data, src->data, src->rowbytes * src->height);
     return PF_Err_NONE;
 }
 
