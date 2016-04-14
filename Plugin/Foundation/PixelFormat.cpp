@@ -55,11 +55,49 @@ void ImageFlipY(void *image_, int width, int height, PixelFormat fmt)
 #ifdef utjEnableISPCKernel
 #include "ConvertKernel_ispc.h"
 
-void ScaleArray(uint8_t *data, size_t size, float scale)  { ispc::ScaleU8(data, (uint32_t)size, scale); }
-void ScaleArray(uint16_t *data, size_t size, float scale) { ispc::ScaleI16(data, (uint32_t)size, scale); }
-void ScaleArray(int32_t *data, size_t size, float scale)  { ispc::ScaleI32(data, (uint32_t)size, scale); }
-void ScaleArray(half *data, size_t size, float scale)     { ispc::ScaleF16((int16_t*)data, (uint32_t)size, scale); }
-void ScaleArray(float *data, size_t size, float scale)    { ispc::ScaleF32(data, (uint32_t)size, scale); }
+void Scale(void *data, PixelFormat fmt, size_t num_, float scale)
+{
+    uint32_t num = (uint32_t)num_ * (fmt & PixelFormat_ChannelMask);
+    switch (fmt & PixelFormat_TypeMask) {
+    case PixelFormat_Type_u8:
+        ispc::ScaleU8((uint8_t*)data, num, scale);
+        break;
+    case PixelFormat_Type_i16:
+        ispc::ScaleI16((uint16_t*)data, num, scale);
+        break;
+    case PixelFormat_Type_i32:
+        ispc::ScaleI32((int32_t*)data, num, scale);
+        break;
+    case PixelFormat_Type_f16:
+        ispc::ScaleF16((int16_t*)data, num, scale);
+        break;
+    case PixelFormat_Type_f32:
+        ispc::ScaleF32((float*)data, num, scale);
+        break;
+    }
+}
+
+void Blend(void *dst, void *src1, void *src2, PixelFormat fmt, size_t num_, float weight)
+{
+    uint32_t num = (uint32_t)num_ * (fmt & PixelFormat_ChannelMask);
+    switch (fmt & PixelFormat_TypeMask) {
+    case PixelFormat_Type_u8:
+        ispc::BlendU8((uint8_t*)dst, (uint8_t*)src1, (uint8_t*)src2, num, weight);
+        break;
+    case PixelFormat_Type_i16:
+        ispc::BlendI16((uint16_t*)dst, (uint16_t*)src1, (uint16_t*)src2, num, weight);
+        break;
+    case PixelFormat_Type_i32:
+        ispc::BlendI32((int32_t*)dst, (int32_t*)src1, (int32_t*)src2, num, weight);
+        break;
+    case PixelFormat_Type_f16:
+        ispc::BlendF16((int16_t*)dst, (int16_t*)src1, (int16_t*)src2, num, weight);
+        break;
+    case PixelFormat_Type_f32:
+        ispc::BlendF32((float*)dst, (float*)src1, (float*)src2, num, weight);
+        break;
+    }
+}
 
 const void* ConvertPixelFormat_ISPC(void *dst, PixelFormat dstfmt, const void *src, PixelFormat srcfmt, size_t size_)
 {

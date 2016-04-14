@@ -4,40 +4,44 @@ typedef int32           i32;
 typedef int16           f16;
 typedef float           f32;
 
+#define f16_to_f32 half_to_float_fast
+#define f32_to_f16 float_to_half_fast
+
+
 uniform u8 to_u8(uniform u8 v) { return v; }
 uniform u8 to_u8(uniform i16 v) { return clamp(v, (i16)0, (i16)255) & 0xff; }
-uniform u8 to_u8(uniform f16 v) { return (int)(clamp(half_to_float(v), 0.0, 1.0) * 255.0f) & 0xff; }
+uniform u8 to_u8(uniform f16 v) { return (int)(clamp(f16_to_f32(v), 0.0, 1.0) * 255.0f) & 0xff; }
 uniform u8 to_u8(uniform float v) { return (int)(clamp(v, 0.0, 1.0) * 255.0f) & 0xff; }
 u8 to_u8(u8 v) { return v; }
 u8 to_u8(i16 v) { return clamp(v, (i16)0, (i16)255) & 0xff; }
-u8 to_u8(f16 v) { return (int)(clamp(half_to_float(v), 0.0, 1.0) * 255.0f) & 0xff; }
+u8 to_u8(f16 v) { return (int)(clamp(f16_to_f32(v), 0.0, 1.0) * 255.0f) & 0xff; }
 u8 to_u8(float v) { return (int)(clamp(v, 0.0, 1.0) * 255.0f) & 0xff; }
 
 uniform i16 to_i16(uniform u8 v) { return v; }
 uniform i16 to_i16(uniform i16 v) { return v; }
-uniform i16 to_i16(uniform f16 v) { uniform float f = half_to_float(v); return (int)(f * 255.0f) | (signbits(f) >> 16); }
+uniform i16 to_i16(uniform f16 v) { uniform float f = f16_to_f32(v); return (int)(f * 255.0f) | (signbits(f) >> 16); }
 uniform i16 to_i16(uniform float v) { return (int)(v * 255.0f) | (signbits(v) >> 16); }
 i16 to_i16(u8 v) { return v; }
 i16 to_i16(i16 v) { return v; }
-i16 to_i16(f16 v) { float f = half_to_float(v); return (int)(f * 255.0f) | (signbits(f) >> 16); }
+i16 to_i16(f16 v) { float f = f16_to_f32(v); return (int)(f * 255.0f) | (signbits(f) >> 16); }
 i16 to_i16(float v) { return (int)(v * 255.0f) | (signbits(v) >> 16); }
 
-uniform f16 to_f16(uniform u8 v) { return float_to_half((float)((int)v) / 255.0f); }
-uniform f16 to_f16(uniform i16 v) { return float_to_half((float)((int)v) / 255.0f); }
+uniform f16 to_f16(uniform u8 v) { return f32_to_f16((float)((int)v) / 255.0f); }
+uniform f16 to_f16(uniform i16 v) { return f32_to_f16((float)((int)v) / 255.0f); }
 uniform f16 to_f16(uniform f16 v) { return v; }
-uniform f16 to_f16(uniform float v) { return float_to_half(v); }
-f16 to_f16(u8 v) { return float_to_half((float)((int)v) / 255.0f); }
-f16 to_f16(i16 v) { return float_to_half((float)((int)v) / 255.0f); }
+uniform f16 to_f16(uniform float v) { return f32_to_f16(v); }
+f16 to_f16(u8 v) { return f32_to_f16((float)((int)v) / 255.0f); }
+f16 to_f16(i16 v) { return f32_to_f16((float)((int)v) / 255.0f); }
 f16 to_f16(f16 v) { return v; }
-f16 to_f16(float v) { return float_to_half(v); }
+f16 to_f16(float v) { return f32_to_f16(v); }
 
 uniform float to_f32(uniform u8 v) { return (float)((int)v) / 255.0f; }
 uniform float to_f32(uniform i16 v) { return (float)v / 255.0f; }
-uniform float to_f32(uniform f16 v) { return half_to_float(v); }
+uniform float to_f32(uniform f16 v) { return f16_to_f32(v); }
 uniform float to_f32(uniform float v) { return v; }
 float to_f32(u8 v) { return (float)((int)v) / 255.0f; }
 float to_f32(i16 v) { return (float)((int)v) / 255.0f; }
-float to_f32(f16 v) { return half_to_float(v); }
+float to_f32(f16 v) { return f16_to_f32(v); }
 float to_f32(float v) { return v; }
 
 export void ScaleU8(uniform u8 data[], uniform size_t size, uniform float scale)
@@ -62,13 +66,49 @@ export void ScaleI32(uniform i32 data[], uniform size_t size, uniform float scal
 export void ScaleF16(uniform f16 data[], uniform size_t size, uniform float scale)
 {
     foreach(i=0 ... size) {
-        data[i] = float_to_half(half_to_float(data[i]) * scale);
+        data[i] = f32_to_f16(f16_to_f32(data[i]) * scale);
     }
 }
 export void ScaleF32(uniform float data[], uniform size_t size, uniform float scale)
 {
     foreach(i=0 ... size) {
         data[i] *= scale;
+    }
+}
+
+export void BlendU8(uniform u8 dst[], uniform u8 src1[], uniform u8 src2[], uniform size_t size, uniform float w)
+{
+    uniform float iw = 1.0 - w;
+    foreach(i=0 ... size) {
+        dst[i] = (u8)(i32)(((f32)(i32)src1[i] * iw) + ((f32)(i32)src2[i] * w));
+    }
+}
+export void BlendI16(uniform i16 dst[], uniform i16 src1[], uniform i16 src2[], uniform size_t size, uniform float w)
+{
+    uniform float iw = 1.0 - w;
+    foreach(i=0 ... size) {
+        dst[i] = (i16)(i32)(((f32)(i32)src1[i] * iw) + ((f32)(i32)src2[i] * w));
+    }
+}
+export void BlendI32(uniform i32 dst[], uniform i32 src1[], uniform i32 src2[], uniform size_t size, uniform float w)
+{
+    uniform float iw = 1.0 - w;
+    foreach(i=0 ... size) {
+        dst[i] = (i32)(((f32)src1[i] * iw) + ((f32)src2[i] * w));
+    }
+}
+export void BlendF16(uniform f16 dst[], uniform f16 src1[], uniform f16 src2[], uniform size_t size, uniform float w)
+{
+    uniform float iw = 1.0 - w;
+    foreach(i=0 ... size) {
+        dst[i] = f32_to_f16((f16_to_f32(src1[i]) * iw) + (f16_to_f32(src2[i]) * w));
+    }
+}
+export void BlendF32(uniform float dst[], uniform float src1[], uniform float src2[], uniform size_t size, uniform float w)
+{
+    uniform float iw = 1.0 - w;
+    foreach(i=0 ... size) {
+        dst[i] = ((src1[i] * iw) + (src2[i] * w));
     }
 }
 

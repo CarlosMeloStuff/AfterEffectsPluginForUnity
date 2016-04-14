@@ -41,17 +41,16 @@ int GetPixelSize(PixelFormat format);
 
 void ImageFlipY(void *image_, int width, int height, PixelFormat fmt);
 
-class half;
-void ScaleArray(uint8_t *data, size_t size, float scale);
-void ScaleArray(uint16_t *data, size_t size, float scale);
-void ScaleArray(int32_t *data, size_t size, float scale);
-void ScaleArray(half *data, size_t size, float scale);
-void ScaleArray(float *data, size_t size, float scale);
+void Scale(void *data, PixelFormat fmt, size_t num_pixels, float scale);
 
-// if dstfmt == num_pixels, return src without conversion
+void Blend(void *dst, void *src1, void *src2, PixelFormat fmt, size_t num_pixels, float weight);
+
+// if dstfmt == srcfmt, return src without conversion
 const void* ConvertPixelFormat(void *dst, PixelFormat dstfmt, const void *src, PixelFormat srcfmt, size_t num_pixels);
 
+// fmt should be PixelFormat_RGBA*
 void RGBA2ARBB(void *data, PixelFormat fmt, size_t num_pixels);
+// fmt should be PixelFormat_RGBA*
 void ARGB2RBBA(void *data, PixelFormat fmt, size_t num_pixels);
 
 } // namespace utj

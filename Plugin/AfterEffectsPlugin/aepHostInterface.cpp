@@ -685,21 +685,8 @@ static PF_Err pf_blend(
     auto *sp2 = (utj::RGBAu8*)src2->data;
     auto *dp = (utj::RGBAu8*)dst->data;
 
-    float w = (float)ratio / (float)0x00010000;
-    float iw = 1.0f - w;
-    for (int yi = 0; yi < height; ++yi) {
-        for (int xi = 0; xi < width; ++xi) {
-            int i = width * yi + xi;
-            utj::RGBAu8 s1 = sp1[i];
-            utj::RGBAu8 s2 = sp2[i];
-            dp[i] = {
-                uint8_t(float(s1.r) * iw + float(s2.r) * w),
-                uint8_t(float(s1.g) * iw + float(s2.g) * w),
-                uint8_t(float(s1.b) * iw + float(s2.b) * w),
-                uint8_t(float(s1.a) * iw + float(s2.a) * w)
-            };
-        }
-    }
+    float weight = (float)ratio / (float)0x00010000;
+    utj::Blend(dp, sp1, sp2, utj::PixelFormat_RGBAu8, width*height, weight);
 
     return PF_Err_NONE;
 }
