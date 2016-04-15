@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "PE.h"
 #include "aepInternal.h"
 
 
@@ -129,6 +130,22 @@ aepCLinkage aepExport void aepEndSequence(aepInstance *ins)
 {
     if (!ins) { return; }
     return ins->endSequence();
+}
+
+
+aepCLinkage aepExport void aepEnumerateDependentDLLs(const char *dllpath, aepEnumerateDLLCallback cb)
+{
+#ifdef utjWindows
+    void *mapped_dll;
+    size_t mapped_size;
+    if (!utj::MapFile(dllpath, mapped_dll, mapped_size, malloc)) {
+        return;
+    }
+    utj::EnumerateDependentDLLs((HMODULE)mapped_dll, [&](const char *dllname) {
+        cb(dllname);
+    }, true);
+    free(mapped_dll);
+#endif // utjWindows
 }
 
 

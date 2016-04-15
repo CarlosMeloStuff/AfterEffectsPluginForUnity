@@ -62,6 +62,9 @@
     <ClInclude Include="AfterEffectsPlugin\aepLayer.h">
       <Filter>AfterEffectsPlugin</Filter>
     </ClInclude>
+    <ClInclude Include="Foundation\PE.h">
+      <Filter>Foundaion</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Foundaion">

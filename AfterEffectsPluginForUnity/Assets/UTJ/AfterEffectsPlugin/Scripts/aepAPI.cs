@@ -312,5 +312,9 @@ namespace UTJ
                 aepSetParamValue(param, ref ((AEFxColorParam)v).value);
             }
         }
+
+
+        public delegate void aepEnumerateDLLCallback(IntPtr dllname);
+        [DllImport("AfterEffectsPlugin")] public static extern void aepEnumerateDependentDLLs(string dllpath, aepEnumerateDLLCallback cb);
     }
 }

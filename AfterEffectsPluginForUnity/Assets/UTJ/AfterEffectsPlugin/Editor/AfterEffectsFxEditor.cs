@@ -1,5 +1,5 @@
 using System;
-using System.IO;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
@@ -27,6 +27,26 @@ namespace UTJ
             if(path == "")
             {
                 return false;
+            }
+            {
+                aepAPI.aepModule mod = aepAPI.aepLoadModule(path);
+                if(!mod) {
+                    string message = "failed to load module. possibly dependent dll not found.";
+                    {
+                        List<string> dlls = new List<string>();
+                        aepAPI.aepEnumerateDependentDLLs(path, (IntPtr dllname) =>
+                        {
+                            dlls.Add(aepAPI.ToS(dllname));
+                        });
+                        if(dlls.Count > 0)
+                        {
+                            message += "\ndependent DLLs: ";
+                            message += String.Join(", ", dlls.ToArray());
+                        }
+                    }
+                    Debug.LogWarning(message);
+                    return false;
+                }
             }
 
             AfterEffectsFx.PluginPath ppath;

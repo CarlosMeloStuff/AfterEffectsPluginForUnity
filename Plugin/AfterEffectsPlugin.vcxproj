@@ -40,6 +40,7 @@
     <ClInclude Include="Foundation\Foundation.h" />
     <ClInclude Include="Foundation\Image.h" />
     <ClInclude Include="Foundation\Misc.h" />
+    <ClInclude Include="Foundation\PE.h" />
     <ClInclude Include="Foundation\PixelFormat.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>

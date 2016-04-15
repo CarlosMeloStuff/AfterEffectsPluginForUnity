@@ -3,6 +3,10 @@
 #include "../AfterEffectsPlugin/AfterEffectsPlugin.h"
 #pragma warning(disable:4996)
 
+void __stdcall DLLCB(const char *dllname)
+{
+    printf("  %s\n", dllname);
+}
 
 int main(int argc, char *argv[])
 {
@@ -11,9 +15,17 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    aepModule *mod = aepLoadModule(argv[1]);
+    const char *dllpath = argv[1];
+
+
+    printf("%s\n", dllpath);
+    printf("dependent dlls:\n");
+    aepEnumerateDependentDLLs(dllpath, DLLCB);
+
+
+    aepModule *mod = aepLoadModule(dllpath);
     if (!mod) {
-        printf("failed to load module: %s\n", argv[1]);
+        printf("failed to load module\n");
     }
     {
         aepPluginInfo info;

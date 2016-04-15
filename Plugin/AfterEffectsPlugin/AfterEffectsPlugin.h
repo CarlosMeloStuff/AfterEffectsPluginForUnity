@@ -121,4 +121,8 @@ aepCLinkage aepExport void          aepBeginSequence(aepInstance *ins, int width
 aepCLinkage aepExport aepLayer*     aepRender(aepInstance *ins, double time);
 aepCLinkage aepExport void          aepEndSequence(aepInstance *ins);
 
+
+typedef void(__stdcall *aepEnumerateDLLCallback)(const char *dllname);
+aepCLinkage aepExport void          aepEnumerateDependentDLLs(const char *dllpath, aepEnumerateDLLCallback e);
+
 #endif // AfterEffectsPlugin_h
