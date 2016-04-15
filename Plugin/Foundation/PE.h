@@ -8,7 +8,7 @@ namespace utj {
 template<class F>
 inline bool MapFile(const char *path, void *&o_data, size_t &o_size, const F &alloc)
 {
-    o_data = NULL;
+    o_data = nullptr;
     o_size = 0;
     if (FILE *f = fopen(path, "rb")) {
         fseek(f, 0, SEEK_END);
@@ -24,11 +24,60 @@ inline bool MapFile(const char *path, void *&o_data, size_t &o_size, const F &al
     return false;
 }
 
-// F: functor(const char *funcname, void *funcptr)
-template<class F>
-inline void EnumerateDLLExports(HMODULE module, const F &f)
+
+inline void GetDLLPath(HMODULE mod, char *path, size_t size)
 {
-    if (module == NULL) { return; }
+    ::GetModuleFileNameA(mod, path, (DWORD)size);
+}
+
+#ifdef _PSAPI_H_
+// #include <psapi.h> required
+
+// Body: [](HMODULE mod) -> void
+template<class Body>
+inline void EachLoadedModules(const Body &body)
+{
+    HMODULE *modules;
+    DWORD num_modules;
+    DWORD requied_size;
+    auto proc = ::GetCurrentProcess();
+
+    ::EnumProcessModules(proc, nullptr, 0, &requied_size);
+    num_modules = requied_size / sizeof(HMODULE);
+    modules = new HMODULE[num_modules];
+    ::EnumProcessModules(proc, modules, requied_size, &requied_size);
+    for (DWORD i = 0; i < num_modules; ++i) {
+        body(modules[i]);
+    }
+    delete[] modules;
+}
+#endif // _PSAPI_H_
+
+// for internal use
+inline void DLLFillGap(size_t& ImageBase, DWORD RVA)
+{
+    PIMAGE_DOS_HEADER pDosHeader = (PIMAGE_DOS_HEADER)ImageBase;
+    PIMAGE_NT_HEADERS pNtHeaders = (PIMAGE_NT_HEADERS)(ImageBase + pDosHeader->e_lfanew);
+
+    PIMAGE_SECTION_HEADER pSectionHeader = IMAGE_FIRST_SECTION(pNtHeaders);
+    for (size_t i = 0; i < pNtHeaders->FileHeader.NumberOfSections; ++i) {
+        PIMAGE_SECTION_HEADER s = pSectionHeader + i;
+        if (RVA >= s->VirtualAddress && RVA < s->VirtualAddress + s->SizeOfRawData) {
+            pSectionHeader = s;
+            break;
+        }
+    }
+
+    DWORD gap = pSectionHeader->VirtualAddress - pSectionHeader->PointerToRawData;
+    ImageBase -= gap;
+}
+
+// Body: [](const char *funcname, void *funcptr) -> void
+// fill_gap: should be true if module is directly memory mapped file (= not loaded by LoadModule())
+template<class Body>
+inline void EnumerateDLLExports(HMODULE module, const Body &body, bool fill_gap = false)
+{
+    if (module == nullptr) { return; }
 
     size_t ImageBase = (size_t)module;
     PIMAGE_DOS_HEADER pDosHeader = (PIMAGE_DOS_HEADER)ImageBase;
@@ -38,23 +87,27 @@ inline void EnumerateDLLExports(HMODULE module, const F &f)
     DWORD RVAExports = pNTHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress;
     if (RVAExports == 0) { return; }
 
+    if (fill_gap) {
+        DLLFillGap(ImageBase, RVAExports);
+    }
+
     IMAGE_EXPORT_DIRECTORY *pExportDirectory = (IMAGE_EXPORT_DIRECTORY *)(ImageBase + RVAExports);
     DWORD *RVANames = (DWORD*)(ImageBase + pExportDirectory->AddressOfNames);
     WORD *RVANameOrdinals = (WORD*)(ImageBase + pExportDirectory->AddressOfNameOrdinals);
     DWORD *RVAFunctions = (DWORD*)(ImageBase + pExportDirectory->AddressOfFunctions);
-    for (int i = 0; i < pExportDirectory->NumberOfFunctions; ++i) {
+    for (DWORD i = 0; i < pExportDirectory->NumberOfFunctions; ++i) {
         char *pName = (char*)(ImageBase + RVANames[i]);
         void *pFunc = (void*)(ImageBase + RVAFunctions[RVANameOrdinals[i]]);
-        f(pName, pFunc);
+        body(pName, pFunc);
     }
 }
 
-// F: functor (const char *funcname)
-// fill_gap: should be true if module is not loaded by LoadModule()
-template<class F>
-inline void EnumerateDependentDLLs(HMODULE module, const F &f, bool fill_gap = false)
+// Body: [](const char *dllname) -> void
+// fill_gap: should be true if module is directly memory mapped file (= not loaded by LoadModule())
+template<class Body>
+inline void EnumerateDependentDLLs(HMODULE module, const Body &body, bool fill_gap = false)
 {
-    if (module == NULL) { return; }
+    if (module == nullptr) { return; }
 
     size_t ImageBase = (size_t)module;
     PIMAGE_DOS_HEADER pDosHeader = (PIMAGE_DOS_HEADER)ImageBase;
@@ -64,61 +117,54 @@ inline void EnumerateDependentDLLs(HMODULE module, const F &f, bool fill_gap = f
     DWORD RVAImports = pNtHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress;
     if (RVAImports == 0) { return; }
 
-    PIMAGE_SECTION_HEADER pSectionHeader = IMAGE_FIRST_SECTION(pNtHeaders);
-    for (size_t i = 0; i < pNtHeaders->FileHeader.NumberOfSections; ++i) {
-        PIMAGE_SECTION_HEADER s = pSectionHeader + i;
-        if (RVAImports >= s->VirtualAddress && RVAImports < s->VirtualAddress + s->SizeOfRawData) {
-            pSectionHeader = s;
-            break;
-        }
-    }
     if (fill_gap) {
-        DWORD gap = pSectionHeader->VirtualAddress - pSectionHeader->PointerToRawData;
-        ImageBase -= gap;
+        DLLFillGap(ImageBase, RVAImports);
     }
 
     IMAGE_IMPORT_DESCRIPTOR *pImportDesc = (IMAGE_IMPORT_DESCRIPTOR*)(ImageBase + RVAImports);
     while (pImportDesc->Name != 0) {
         const char *pDLLName = (const char*)(ImageBase + pImportDesc->Name);
-        f(pDLLName);
+        body(pDLLName);
         ++pImportDesc;
     }
     return;
 }
 
-// dllname: 特定の dll からの import のみを巡回したい場合指定。大文字小文字区別しません。 NULL の場合全ての dll からの import を巡回。
-// F: functor (const char *funcname, void *&funcptr)
-template<class F>
-inline void EnumerateDLLImports(HMODULE module, const char *dllname, const F &f)
+// Body: [](const char *dllname, const char *funcname, void *&funcptr) -> void
+// fill_gap: should be true if module is directly memory mapped file (= not loaded by LoadModule())
+template<class Body>
+inline void EnumerateDLLImports(HMODULE module, const Body &body, bool fill_gap = false)
 {
-    if (module == NULL) { return; }
+    if (module == nullptr) { return; }
 
     size_t ImageBase = (size_t)module;
     PIMAGE_DOS_HEADER pDosHeader = (PIMAGE_DOS_HEADER)ImageBase;
     if (pDosHeader->e_magic != IMAGE_DOS_SIGNATURE) { return; }
 
-    PIMAGE_NT_HEADERS pNTHeader = (PIMAGE_NT_HEADERS)(ImageBase + pDosHeader->e_lfanew);
-    DWORD RVAImports = pNTHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress;
+    PIMAGE_NT_HEADERS pNtHeaders = (PIMAGE_NT_HEADERS)(ImageBase + pDosHeader->e_lfanew);
+    DWORD RVAImports = pNtHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress;
     if (RVAImports == 0) { return; }
+
+    if (fill_gap) {
+        DLLFillGap(ImageBase, RVAImports);
+    }
 
     IMAGE_IMPORT_DESCRIPTOR *pImportDesc = (IMAGE_IMPORT_DESCRIPTOR*)(ImageBase + RVAImports);
     while (pImportDesc->Name != 0) {
         const char *pDLLName = (const char*)(ImageBase + pImportDesc->Name);
-        if (dllname == NULL || _stricmp(pDLLName, dllname) == 0) {
-            IMAGE_THUNK_DATA* pThunkOrig = (IMAGE_THUNK_DATA*)(ImageBase + pImportDesc->OriginalFirstThunk);
-            IMAGE_THUNK_DATA* pThunk = (IMAGE_THUNK_DATA*)(ImageBase + pImportDesc->FirstThunk);
-            while (pThunkOrig->u1.AddressOfData != 0) {
-                if ((pThunkOrig->u1.Ordinal & 0x80000000) > 0) {
-                    DWORD Ordinal = pThunkOrig->u1.Ordinal & 0xffff;
-                    // nameless function
-                }
-                else {
-                    IMAGE_IMPORT_BY_NAME* pIBN = (IMAGE_IMPORT_BY_NAME*)(ImageBase + pThunkOrig->u1.AddressOfData);
-                    f((char*)pIBN->Name, *(void**)pThunk);
-                }
-                ++pThunkOrig;
-                ++pThunk;
+        IMAGE_THUNK_DATA* pThunkOrig = (IMAGE_THUNK_DATA*)(ImageBase + pImportDesc->OriginalFirstThunk);
+        IMAGE_THUNK_DATA* pThunk = (IMAGE_THUNK_DATA*)(ImageBase + pImportDesc->FirstThunk);
+        while (pThunkOrig->u1.AddressOfData != 0) {
+            if ((pThunkOrig->u1.Ordinal & 0x80000000) > 0) {
+                DWORD Ordinal = pThunkOrig->u1.Ordinal & 0xffff;
+                // nameless function
             }
+            else {
+                IMAGE_IMPORT_BY_NAME* pIBN = (IMAGE_IMPORT_BY_NAME*)(ImageBase + pThunkOrig->u1.AddressOfData);
+                body(pDLLName, (char*)pIBN->Name, *(void**)pThunk);
+            }
+            ++pThunkOrig;
+            ++pThunk;
         }
         ++pImportDesc;
     }
