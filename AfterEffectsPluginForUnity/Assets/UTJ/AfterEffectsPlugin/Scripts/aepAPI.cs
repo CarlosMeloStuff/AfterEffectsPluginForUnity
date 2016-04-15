@@ -316,5 +316,6 @@ namespace UTJ
 
         public delegate void aepEnumerateDLLCallback(IntPtr dllname);
         [DllImport("AfterEffectsPlugin")] public static extern void aepEnumerateDependentDLLs(string dllpath, aepEnumerateDLLCallback cb);
+        [DllImport("AfterEffectsPlugin")] public static extern void aepEnumerateMissingDependentDLLs(string dllpath, aepEnumerateDLLCallback cb);
     }
 }

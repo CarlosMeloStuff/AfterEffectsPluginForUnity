@@ -31,16 +31,16 @@ namespace UTJ
             {
                 aepAPI.aepModule mod = aepAPI.aepLoadModule(path);
                 if(!mod) {
-                    string message = "failed to load module. possibly dependent dll not found.";
+                    string message = "failed to load module. ";
                     {
                         List<string> dlls = new List<string>();
-                        aepAPI.aepEnumerateDependentDLLs(path, (IntPtr dllname) =>
+                        aepAPI.aepEnumerateMissingDependentDLLs(path, (IntPtr dllname) =>
                         {
                             dlls.Add(aepAPI.ToS(dllname));
                         });
                         if(dlls.Count > 0)
                         {
-                            message += "\ndependent DLLs: ";
+                            message += "missing dependent DLLs: ";
                             message += String.Join(", ", dlls.ToArray());
                         }
                     }

@@ -123,6 +123,7 @@ aepCLinkage aepExport void          aepEndSequence(aepInstance *ins);
 
 
 typedef void(__stdcall *aepEnumerateDLLCallback)(const char *dllname);
-aepCLinkage aepExport void          aepEnumerateDependentDLLs(const char *dllpath, aepEnumerateDLLCallback e);
+aepCLinkage aepExport void          aepEnumerateDependentDLLs(const char *dllpath, aepEnumerateDLLCallback cb);
+aepCLinkage aepExport void          aepEnumerateMissingDependentDLLs(const char *dllpath, aepEnumerateDLLCallback cb);
 
 #endif // AfterEffectsPlugin_h

@@ -148,6 +148,24 @@ aepCLinkage aepExport void aepEnumerateDependentDLLs(const char *dllpath, aepEnu
 #endif // utjWindows
 }
 
+aepCLinkage aepExport void aepEnumerateMissingDependentDLLs(const char *dllpath, aepEnumerateDLLCallback cb)
+{
+#ifdef utjWindows
+    void *mapped_dll;
+    size_t mapped_size;
+    if (!utj::MapFile(dllpath, mapped_dll, mapped_size, malloc)) {
+        return;
+    }
+    utj::EnumerateDependentDLLs((HMODULE)mapped_dll, [&](const char *dllname) {
+        if (!utj::TryLoadModule(dllname)) {
+            cb(dllname);
+        }
+    }, true);
+    free(mapped_dll);
+#endif // utjWindows
+}
+
+
 
 #ifndef aepStaticLink
 // deferred call APIs

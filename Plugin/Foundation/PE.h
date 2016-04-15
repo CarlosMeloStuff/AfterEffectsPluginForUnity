@@ -25,9 +25,19 @@ inline bool MapFile(const char *path, void *&o_data, size_t &o_size, const F &al
 }
 
 
-inline void GetDLLPath(HMODULE mod, char *path, size_t size)
+inline bool TryLoadModule(const char *dllname)
 {
-    ::GetModuleFileNameA(mod, path, (DWORD)size);
+    HMODULE mod = ::GetModuleHandleA(dllname);
+    if (mod) { return true; }
+
+    mod = ::LoadLibraryA(dllname);
+    // should FreeLibrary(mod) here?
+    return mod != nullptr;
+}
+
+inline void GetDLLPath(HMODULE mod, char *dst_path, size_t dst_size)
+{
+    ::GetModuleFileNameA(mod, dst_path, (DWORD)dst_size);
 }
 
 #ifdef _PSAPI_H_
