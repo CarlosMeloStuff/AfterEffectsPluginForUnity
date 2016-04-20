@@ -55,9 +55,11 @@ void DLLAddSearchPath(const char *path_to_add)
 
     DWORD ret = ::GetEnvironmentVariableA("PATH", &path[0], (DWORD)path.size());
     path.resize(ret);
-    path += ";";
-    path += path_to_add;
-    ::SetEnvironmentVariableA("PATH", path.c_str());
+    if (path.find(path_to_add) == std::string::npos) {
+        path += ";";
+        path += path_to_add;
+        ::SetEnvironmentVariableA("PATH", path.c_str());
+    }
 
 #else 
     std::string path = getenv("LD_LIBRARY_PATH");

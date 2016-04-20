@@ -59,7 +59,7 @@ namespace UTJ
             }
         }
 
-
+        [SerializeField] string[] m_searchPaths;
         [SerializeField] PluginPath m_pluginPath;
         AEFxParam[] m_params;
 
@@ -80,6 +80,11 @@ namespace UTJ
 
 
 
+        public string[] searchPaths
+        {
+            get { return m_searchPaths; }
+            set { m_searchPaths = value; }
+        }
         public PluginPath pluginPath
         {
             get { return m_pluginPath; }
@@ -95,10 +100,20 @@ namespace UTJ
         IntPtr GetTWEvent() { return TextureWriter.GetRenderEventFunc(); }
         IntPtr GetAEPEvent() { return aepAPI.GetRenderEventFunc(); }
 
+        aepAPI.aepModule LoadModule()
+        {
+            foreach(var p in m_searchPaths)
+            {
+                aepAPI.aepAddSearchPath(p);
+            }
+            var mod = aepAPI.aepLoadModule(m_pluginPath.GetPath());
+            return mod;
+        }
+
         void UpdateParamList()
         {
             if(m_pluginPath == null) { return; }
-            var mod = aepAPI.aepLoadModule(m_pluginPath.GetPath());
+            var mod = LoadModule();
             if (!mod)
             {
                 ReleaseInstance();
@@ -261,7 +276,7 @@ namespace UTJ
         {
             if (!m_inst && m_pluginPath != null)
             {
-                m_inst = aepAPI.aepCreateInstance(aepAPI.aepLoadModule(m_pluginPath.GetPath()));
+                m_inst = aepAPI.aepCreateInstance(LoadModule());
             }
             if (!m_inst)
             {

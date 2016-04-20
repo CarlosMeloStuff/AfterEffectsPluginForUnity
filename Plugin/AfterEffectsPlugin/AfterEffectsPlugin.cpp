@@ -25,6 +25,11 @@ aepCLinkage aepExport void aepGetLayerData(aepLayer *layer, aepLayerData *dst)
     dst->pixels     = layer->getData();
 }
 
+aepCLinkage aepExport void aepAddSearchPath(const char *path)
+{
+    utj::DLLAddSearchPath(path);
+}
+
 namespace {
     typedef std::unique_ptr<aepModule> aepModulePtr;
     std::map<std::string, aepModulePtr> g_modules;

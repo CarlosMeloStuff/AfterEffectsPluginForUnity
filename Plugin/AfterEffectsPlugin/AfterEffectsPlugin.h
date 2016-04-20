@@ -101,6 +101,7 @@ aepCLinkage aepExport void          aepDestroyLayer(aepLayer *layer);
 aepCLinkage aepExport void          aepResizeLayer(aepLayer *layer, int width, int height);
 aepCLinkage aepExport void          aepGetLayerData(aepLayer *layer, aepLayerData *dst);
 
+aepCLinkage aepExport void          aepAddSearchPath(const char *path);
 aepCLinkage aepExport aepModule*    aepLoadModule(const char *path);
 aepCLinkage aepExport void          aepUnloadModule(aepModule *mod);
 aepCLinkage aepExport void          aepGetPluginInfo(aepModule *ins, aepPluginInfo *dst);

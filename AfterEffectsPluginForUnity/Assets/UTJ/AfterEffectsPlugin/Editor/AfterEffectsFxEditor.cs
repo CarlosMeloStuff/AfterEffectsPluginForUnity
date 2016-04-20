@@ -83,6 +83,17 @@ namespace UTJ
             const float label_width_1c = 16.0f;
             bool repaint = false;
 
+            {
+                
+                var paths = serializedObject.FindProperty("m_searchPaths");
+                EditorGUI.BeginChangeCheck();
+                EditorGUILayout.PropertyField(paths, true);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    serializedObject.ApplyModifiedProperties();
+                }
+            }
+
             // "Select Plugin" button
             if (GUILayout.Button("Select Plugin", GUILayout.MinWidth(width)))
             {
