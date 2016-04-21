@@ -11,9 +11,18 @@
     #endif
 #endif
 
+#if defined(_WIN32) && !defined(_MINWINDEF_)
+struct HINSTAMCE__;
+typedef HINSTAMCE__* HMODULE;
+#endif
+
 namespace utj {
 
-typedef void* module_t;
+#ifdef utjWindows
+    typedef HMODULE module_t;
+#else
+    typedef void* module_t;
+#endif
 module_t    DLLLoad(const char *path);
 void        DLLUnload(module_t mod);
 void*       DLLGetSymbol(module_t mod, const char *name);

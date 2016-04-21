@@ -40,31 +40,9 @@ inline void GetDLLPath(HMODULE mod, char *dst_path, size_t dst_size)
     ::GetModuleFileNameA(mod, dst_path, (DWORD)dst_size);
 }
 
-#ifdef _PSAPI_H_
-// #include <psapi.h> required
-
-// Body: [](HMODULE mod) -> void
-template<class Body>
-inline void EachLoadedModules(const Body &body)
-{
-    HMODULE *modules;
-    DWORD num_modules;
-    DWORD requied_size;
-    auto proc = ::GetCurrentProcess();
-
-    ::EnumProcessModules(proc, nullptr, 0, &requied_size);
-    num_modules = requied_size / sizeof(HMODULE);
-    modules = new HMODULE[num_modules];
-    ::EnumProcessModules(proc, modules, requied_size, &requied_size);
-    for (DWORD i = 0; i < num_modules; ++i) {
-        body(modules[i]);
-    }
-    delete[] modules;
-}
-#endif // _PSAPI_H_
 
 // for internal use
-inline void DLLFillGap(size_t& ImageBase, DWORD RVA)
+inline void RVAFillGap(size_t& ImageBase, DWORD RVA)
 {
     PIMAGE_DOS_HEADER pDosHeader = (PIMAGE_DOS_HEADER)ImageBase;
     PIMAGE_NT_HEADERS pNtHeaders = (PIMAGE_NT_HEADERS)(ImageBase + pDosHeader->e_lfanew);
@@ -98,7 +76,7 @@ inline void EnumerateDLLExports(HMODULE module, const Body &body, bool fill_gap 
     if (RVAExports == 0) { return; }
 
     if (fill_gap) {
-        DLLFillGap(ImageBase, RVAExports);
+        RVAFillGap(ImageBase, RVAExports);
     }
 
     IMAGE_EXPORT_DIRECTORY *pExportDirectory = (IMAGE_EXPORT_DIRECTORY *)(ImageBase + RVAExports);
@@ -128,7 +106,7 @@ inline void EnumerateDependentDLLs(HMODULE module, const Body &body, bool fill_g
     if (RVAImports == 0) { return; }
 
     if (fill_gap) {
-        DLLFillGap(ImageBase, RVAImports);
+        RVAFillGap(ImageBase, RVAImports);
     }
 
     IMAGE_IMPORT_DESCRIPTOR *pImportDesc = (IMAGE_IMPORT_DESCRIPTOR*)(ImageBase + RVAImports);
@@ -156,7 +134,7 @@ inline void EnumerateDLLImports(HMODULE module, const Body &body, bool fill_gap 
     if (RVAImports == 0) { return; }
 
     if (fill_gap) {
-        DLLFillGap(ImageBase, RVAImports);
+        RVAFillGap(ImageBase, RVAImports);
     }
 
     IMAGE_IMPORT_DESCRIPTOR *pImportDesc = (IMAGE_IMPORT_DESCRIPTOR*)(ImageBase + RVAImports);

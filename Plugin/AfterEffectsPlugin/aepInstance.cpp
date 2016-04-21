@@ -85,7 +85,7 @@ void aepInstance::endSequence()
 
 PF_Err aepInstance::callPF(int cmd)
 {
-    return m_module->getEntryPoint()(cmd, &m_pf_in, &m_pf_out, &m_pf_params[0], &m_output.m_pf, this);
+    return m_module->callPF(cmd, &m_pf_in, &m_pf_out, &m_pf_params[0], &m_output.m_pf, this);
 }
 const std::string& aepInstance::getAbout() const { return m_module->getAbout(); }
 bool aepInstance::hasDialog() const { return m_module->hasDialog(); }

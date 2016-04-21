@@ -19,6 +19,11 @@ aepModule::~aepModule()
 }
 
 
+static const char *g_entrypoint_candidates[] = {
+    "entryPointFunc",
+    "EntryPointFunc",
+    //"EffectMainExtra",
+};
 
 bool aepModule::load(const char *path)
 {
@@ -27,10 +32,11 @@ bool aepModule::load(const char *path)
     m_module = utj::DLLLoad(path);
     if (!m_module) { return false; }
 
-    // check m_module is AfterEffects plugin
-    (void*&)m_entrypoint = utj::DLLGetSymbol(m_module, "EntryPointFunc");
-    if (!m_entrypoint) {
-        (void*&)m_entrypoint = utj::DLLGetSymbol(m_module, "entryPointFunc");
+    // find entry point
+    for (int i = 0; i < std::extent<decltype(g_entrypoint_candidates)>::value; ++i) {
+        if (auto p = utj::DLLGetSymbol(m_module, g_entrypoint_candidates[i])) {
+            m_entrypoint = aepSymbol(g_entrypoint_candidates[i], p);
+        }
     }
 
     if (!m_entrypoint) {
@@ -52,7 +58,7 @@ void aepModule::unload()
 
         utj::DLLUnload(m_module);
         m_module = nullptr;
-        m_entrypoint = nullptr;
+        m_entrypoint = aepSymbol();
     }
 }
 
@@ -61,15 +67,20 @@ aepInstance* aepModule::createInstance()
     return new aepInstance(this);
 }
 
-aepEntryPoint aepModule::getEntryPoint()
+const aepSymbol& aepModule::getEntryPoint() const
 {
     return m_entrypoint;
 }
 
 PF_Err aepModule::callPF(int cmd)
 {
+    return callPF(cmd, &m_pf_in, &m_pf_out, nullptr, nullptr, this);
+}
+
+PF_Err aepModule::callPF(PF_Cmd cmd, PF_InData *in_data, PF_OutData *out_data, PF_ParamDef *params[], PF_LayerDef *output, void *extra)
+{
     if (!m_entrypoint) { return 0; }
-    return m_entrypoint(cmd, &m_pf_in, &m_pf_out, nullptr, nullptr, this);
+    return ((aepEntryPointFunc)m_entrypoint.value)(cmd, in_data, out_data, params, output, extra);
 }
 
 PF_InData&  aepModule::getPFInData() { return m_pf_in; }

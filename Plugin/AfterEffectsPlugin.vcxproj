@@ -21,6 +21,7 @@
     <ClCompile Include="AfterEffectsPlugin\aepModule.cpp" />
     <ClCompile Include="AfterEffectsPlugin\aepParam.cpp" />
     <ClCompile Include="AfterEffectsPlugin\AfterEffectsPlugin.cpp" />
+    <ClCompile Include="Foundation\Debug.cpp" />
     <ClCompile Include="Foundation\Misc.cpp" />
     <ClCompile Include="Foundation\PixelFormat.cpp" />
     <ClCompile Include="pch.cpp">
@@ -37,6 +38,7 @@
     <ClInclude Include="AfterEffectsPlugin\aepParam.h" />
     <ClInclude Include="AfterEffectsPlugin\AfterEffectsPlugin.h" />
     <ClInclude Include="Foundation\Buffer.h" />
+    <ClInclude Include="Foundation\Debug.h" />
     <ClInclude Include="Foundation\Foundation.h" />
     <ClInclude Include="Foundation\Image.h" />
     <ClInclude Include="Foundation\Misc.h" />

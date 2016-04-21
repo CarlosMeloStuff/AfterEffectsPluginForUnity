@@ -26,6 +26,9 @@
     <ClCompile Include="AfterEffectsPlugin\aepLayer.cpp">
       <Filter>AfterEffectsPlugin</Filter>
     </ClCompile>
+    <ClCompile Include="Foundation\Debug.cpp">
+      <Filter>Foundaion</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -63,6 +66,9 @@
       <Filter>AfterEffectsPlugin</Filter>
     </ClInclude>
     <ClInclude Include="Foundation\PE.h">
+      <Filter>Foundaion</Filter>
+    </ClInclude>
+    <ClInclude Include="Foundation\Debug.h">
       <Filter>Foundaion</Filter>
     </ClInclude>
   </ItemGroup>
